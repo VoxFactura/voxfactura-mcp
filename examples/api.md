@@ -17,10 +17,13 @@ curl -s -H "$AUTH" "$BASE/invoices?unpaid_only=true"
 # Détail d'une facture (avec lignes)
 curl -s -H "$AUTH" "$BASE/invoices/1"
 
-# Dépenses d'un chantier
-curl -s -H "$AUTH" "$BASE/expenses?chantier_id=42"
+# Marge du client 3 : facturé HT, dépenses, marge, une ligne par travail
+curl -s -H "$AUTH" "$BASE/clients/3/margin"
 
-# Chantiers en cours
+# Dépenses rattachées au client 3 (chacune dit son client, devis et facture)
+curl -s -H "$AUTH" "$BASE/expenses?client_id=3"
+
+# Ancien regroupement, gardé pour compatibilité : chantiers en cours
 curl -s -H "$AUTH" "$BASE/chantiers?statut=en_cours"
 
 # Récapitulatif TVA du 1er trimestre 2026
@@ -63,6 +66,10 @@ curl -s -H "$AUTH" -H "Content-Type: application/json" \
 curl -s -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"designation":"Ciment","montant_ttc":"240.00","categorie":"materiel","chantier_id":42}' \
   "$BASE/expenses"
+
+# Joindre la facture PDF à la dépense n°12 (ligne du relevé) : lue, HT et TVA
+# repris si la ligne n'en avait pas. Renvoyer le même fichier ne double rien.
+curl -s -H "$AUTH" -F "fichier=@facture.pdf" "$BASE/expenses/12/justificatifs"
 ```
 
 ## Clé cabinet (cabinet comptable, lecture seule)
@@ -88,7 +95,7 @@ from voxfactura_mcp.client import VoxFacturaClient
 
 c = VoxFacturaClient(api_key="vf_live_ta_cle")
 print(c.list_invoices(unpaid_only=True))
-print(c.chantier_margin(42))
+print(c.client_margin(3))
 
 # Clé cabinet : un dossier à la fois
 cab = VoxFacturaClient(api_key="vf_cab_votre_cle")

@@ -6,7 +6,12 @@ leur champ `id`. Aucun identifiant interne n'est exposé ni accepté.
 
 Expose les données du compte comme des outils que l'assistant IA (Claude
 Desktop / Code, ou tout client MCP) appelle en langage naturel :
-« mes impayés », « ma marge sur le chantier X », « ma TVA du trimestre ».
+« mes impayés », « ma marge sur le client Martin », « ma TVA du trimestre ».
+
+Rangement par client : `marge_client` donne la marge d'un client (en tout et
+par travail) et chaque dépense dit son client, son devis et sa facture.
+`marge_chantier` et les outils chantiers restent pour les usages existants
+(ancien regroupement).
 
 Comptabilité : récap TVA, journaux des ventes et des achats (JSON ou CSV),
 export FEC, PDF Factur-X des factures, justificatifs des dépenses,
@@ -115,13 +120,20 @@ def depenses(
     debut: str | None = None,
     fin: str | None = None,
     dossier: int | None = None,
+    client_id: int | None = None,
 ) -> Any:
-    """Liste les dépenses (factures de frais), filtrables par chantier (numéro
-    du chantier dans le compte), catégorie ou période (`debut` / `fin` en
-    AAAA-MM-JJ, inclus)."""
+    """Liste les dépenses (factures de frais). Chacune dit à quel client, devis
+    ou facture elle est rattachée (`client_id`, `devis_id`, `facture_id`,
+    numéros du compte). Filtrables par client (`client_id` = numéro du client
+    dans le compte), par chantier (numéro du chantier, ancien regroupement),
+    catégorie ou période (`debut` / `fin` en AAAA-MM-JJ, inclus)."""
     return _safe(
         lambda: _client(dossier).list_expenses(
-            chantier_id=chantier_id, categorie=categorie, date_from=debut, date_to=fin
+            chantier_id=chantier_id,
+            categorie=categorie,
+            date_from=debut,
+            date_to=fin,
+            client_id=client_id,
         )
     )
 
@@ -159,15 +171,17 @@ def _fichier(contenu: bytes, mime: str, nom: str) -> dict[str, Any]:
 def chantiers(
     statut: str | None = None, client_id: int | None = None, dossier: int | None = None
 ) -> Any:
-    """Liste les chantiers, éventuellement filtrés par statut (en_cours, termine…)
-    ou par client (`client_id` = numéro du client dans le compte)."""
+    """Liste les chantiers (ancien regroupement, gardé pour compatibilité),
+    éventuellement filtrés par statut (en_cours, termine…) ou par client
+    (`client_id` = numéro du client dans le compte). Pour la marge, préférer
+    `marge_client`."""
     return _safe(lambda: _client(dossier).list_chantiers(statut=statut, client_id=client_id))
 
 
 @mcp.tool()
 def chantier(chantier_id: int, dossier: int | None = None) -> Any:
-    """Détail d'un chantier par son numéro dans le compte (le champ `id`
-    renvoyé par la liste des chantiers)."""
+    """Détail d'un chantier (ancien regroupement) par son numéro dans le
+    compte (le champ `id` renvoyé par la liste des chantiers)."""
     return _safe(lambda: _client(dossier).get_chantier(chantier_id))
 
 
@@ -178,10 +192,23 @@ def clients(recherche: str | None = None, dossier: int | None = None) -> Any:
 
 
 @mcp.tool()
+def marge_client(client_id: int, dossier: int | None = None) -> Any:
+    """Marge d'un client (`client_id` = numéro du client dans le compte, le
+    champ `id` de l'outil clients) : facturé HT, dépenses et marge, en tout et
+    par travail (un devis et ses factures, une facture seule, ou un
+    regroupement), plus une ligne `sans_document` pour les dépenses du client
+    sans devis ni facture. Mêmes chiffres que la fiche client de VoxFactura ;
+    `depenses_en_ttc` vrai pour un compte en franchise de TVA. Nécessite une
+    clé avec les permissions factures + dépenses."""
+    return _safe(lambda: _client(dossier).client_margin(client_id))
+
+
+@mcp.tool()
 def marge_chantier(chantier_id: int, dossier: int | None = None) -> Any:
-    """Marge d'un chantier (par son numéro dans le compte) : chiffre d'affaires
-    facturé moins les dépenses. Nécessite une clé avec les permissions
-    factures + dépenses."""
+    """Ancien regroupement, gardé pour compatibilité : préférer `marge_client`.
+    Marge d'un chantier (par son numéro dans le compte) : chiffre d'affaires
+    facturé moins les dépenses rangées sur ce chantier. Nécessite une clé avec
+    les permissions factures + dépenses."""
     return _safe(lambda: _client(dossier).chantier_margin(chantier_id))
 
 

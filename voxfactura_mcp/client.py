@@ -214,10 +214,14 @@ class VoxFacturaClient:
         limit: int = 100,
         date_from: str | None = None,
         date_to: str | None = None,
+        client_id: int | None = None,
     ) -> list[dict]:
+        """Dépenses ; chacune porte `client_id`, `devis_id` et `facture_id`
+        (rattachement, numéros du compte). `client_id` filtre sur un client."""
         page = self._get(
             "/expenses",
             {
+                "client_id": client_id,
                 "chantier_id": chantier_id,
                 "categorie": categorie,
                 "limit": limit,
@@ -257,6 +261,13 @@ class VoxFacturaClient:
     def list_clients(self, *, search: str | None = None, limit: int = 50) -> list[dict]:
         page = self._get("/clients", {"search": search, "limit": limit})
         return page.get("data", [])
+
+    def client_margin(self, client_id: int) -> dict:
+        """Marge d'un client, calculée par le serveur (`invoices:read` +
+        `expenses:read`) : facturé HT, dépenses, marge, `depenses_en_ttc`,
+        une ligne par travail et une ligne `sans_document`. Mêmes chiffres
+        que la fiche client de VoxFactura."""
+        return self._get(f"/clients/{client_id}/margin")
 
     def vat_summary(self, *, period_start: str, period_end: str) -> dict:
         return self._get(
@@ -358,9 +369,10 @@ class VoxFacturaClient:
         return self._get(f"/chantiers/{chantier_id}/revenue")
 
     def chantier_margin(self, chantier_id: int) -> dict:
-        """Marge d'un chantier : CA facturé (calculé par le serveur, voir
-        `chantier_revenue`) - dépenses. Deux lectures (`invoices:read` +
-        `expenses:read` requis sur la clé)."""
+        """Ancien regroupement, gardé pour compatibilité : préférer
+        `client_margin`. Marge d'un chantier : CA facturé (calculé par le
+        serveur, voir `chantier_revenue`) - dépenses. Deux lectures
+        (`invoices:read` + `expenses:read` requis sur la clé)."""
         ca = self.chantier_revenue(chantier_id)
         expenses = self.list_expenses(chantier_id=chantier_id, limit=200)
         ca_ht = _dec(ca.get("ca_ht"))

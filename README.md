@@ -4,7 +4,7 @@ Branche ton business **VoxFactura** sur ton assistant IA (Claude Desktop, Claude
 Code, ou tout client MCP). Tu poses tes questions en langage naturel :
 
 - « Quelles sont mes factures impayées ? »
-- « Quelle est ma marge sur le chantier Villa Michu ? »
+- « Quelle est ma marge avec le client Martin ? »
 - « Combien j'ai dépensé chez Point P ce mois-ci ? »
 - « Donne-moi mon récapitulatif TVA du 1er trimestre. »
 - « Crée un devis brouillon pour le client 12 : 3 radiateurs à 450. »
@@ -16,11 +16,13 @@ VoxFactura). Tout passe par une clé API **scopée** que tu contrôles.
 ## 1. Crée une clé API
 
 Dans VoxFactura : **Réglages → Clés API → Créer une clé**. Coche les permissions
-voulues (lecture : factures, dépenses, chantiers, clients, comptabilité ;
+voulues (lecture : factures, dépenses, clients, comptabilité, encaissements ;
 écriture : créer des devis, marquer payé, ajouter des dépenses). Copie la clé
 `vf_live_…` : elle n'est affichée qu'une seule fois.
 
-- Pour la **marge chantier** : factures + dépenses.
+- Pour la **marge d'un client** : factures + dépenses.
+- La case « Chantiers et regroupements (ancien) » ne sert plus qu'aux outils
+  chantiers, gardés pour compatibilité.
 - Pour le **récap TVA / FEC** : comptabilité.
 
 ## 2. Installe
@@ -96,13 +98,14 @@ dossiers des clients qui vous ont donné accès, un dossier à la fois :
 | `factures` | Factures (filtres statut / chantier / période) | factures |
 | `facture` | Détail d'une facture | factures |
 | `pdf_facture` | PDF Factur-X d'une facture émise (base64) | factures |
-| `depenses` | Dépenses (filtres chantier / catégorie / période) | dépenses |
+| `depenses` | Dépenses avec leur client, devis et facture (filtres client / chantier / catégorie / période) | dépenses |
 | `justificatifs_depense` | Justificatifs d'une dépense | dépenses |
 | `justificatif` | Fichier d'un justificatif (base64) | dépenses |
-| `chantiers` | Liste des chantiers (filtres statut / client) | chantiers |
-| `chantier` | Détail d'un chantier | chantiers |
 | `clients` | Liste / recherche clients | clients |
-| `marge_chantier` | CA facturé − dépenses d'un chantier | factures + dépenses |
+| `marge_client` | Facturé HT, dépenses et marge d'un client, par travail | factures + dépenses |
+| `chantiers` | Liste des chantiers (ancien regroupement) | chantiers |
+| `chantier` | Détail d'un chantier (ancien regroupement) | chantiers |
+| `marge_chantier` | Ancien : CA facturé − dépenses d'un chantier, préférer `marge_client` | factures + dépenses |
 | `recap_tva` | TVA collectée / déductible / nette | comptabilité |
 | `journal_ventes` | Journal des ventes d'une période | comptabilité |
 | `journal_achats` | Journal des achats d'une période | comptabilité |
