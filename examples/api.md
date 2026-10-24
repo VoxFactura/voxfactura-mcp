@@ -3,7 +3,7 @@
 Remplace `vf_live_…` par ta clé (Réglages → Clés API).
 
 ```bash
-BASE="https://www.voxfactura.com/api/v1/pub"
+BASE="https://api.voxfactura.com/api/v1/pub"
 KEY="vf_live_ta_cle"
 AUTH="Authorization: Bearer $KEY"
 ```

@@ -8,7 +8,7 @@
 
 ## Base
 
-- Base URL : https://www.voxfactura.com
+- Base URL : https://api.voxfactura.com
 - Préfixe : /api/v1/pub
 - Auth : header `Authorization: Bearer vf_live_…` (clé API scopée créée par
   l'artisan dans Réglages → Clés API). Alternative : header `X-API-Key`.

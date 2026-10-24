@@ -7,4 +7,4 @@ appelables en langage naturel. Lecture, plus des écritures gated qui ne font
 jamais d'envoi client.
 """
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"

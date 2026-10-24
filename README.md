@@ -62,7 +62,7 @@ claude mcp add voxfactura -e VOXFACTURA_API_KEY=vf_live_ta_cle -- voxfactura-mcp
 | Variable | Rôle | Défaut |
 |---|---|---|
 | `VOXFACTURA_API_KEY` | Ta clé API (obligatoire) | aucune |
-| `VOXFACTURA_API_BASE_URL` | URL de l'API | `https://www.voxfactura.com` |
+| `VOXFACTURA_API_BASE_URL` | URL de l'API | `https://api.voxfactura.com` |
 | `VOXFACTURA_DOSSIER` | Clé cabinet : numéro du dossier client lu par défaut | aucun |
 
 ## Cabinet comptable : une clé pour tous vos dossiers
@@ -125,7 +125,7 @@ avec une clé cabinet.
 ## API sous-jacente
 
 Le serveur n'est qu'un habillage de l'API publique VoxFactura (lecture/écriture
-scopée). Doc interactive : `https://www.voxfactura.com/api/v1/pub/docs`.
+scopée). Doc interactive : `https://api.voxfactura.com/api/v1/pub/docs`.
 Voir aussi [`llms.txt`](./llms.txt) et [`examples/`](./examples/).
 
 ## Éditeur

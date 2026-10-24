@@ -23,7 +23,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-DEFAULT_BASE_URL = "https://www.voxfactura.com"
+DEFAULT_BASE_URL = "https://api.voxfactura.com"
 _TIMEOUT = 30.0
 # Pagination des dépenses (l'API en rend 200 au plus par page).
 _PAR_PAGE = 200
