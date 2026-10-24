@@ -62,7 +62,7 @@ claude mcp add voxfactura -e VOXFACTURA_API_KEY=vf_live_ta_cle -- voxfactura-mcp
 | Variable | Rôle | Défaut |
 |---|---|---|
 | `VOXFACTURA_API_KEY` | Ta clé API (obligatoire) | aucune |
-| `VOXFACTURA_API_BASE_URL` | URL de l'API | `https://voxfacture-production.up.railway.app` |
+| `VOXFACTURA_API_BASE_URL` | URL de l'API | `https://www.voxfactura.com` |
 | `VOXFACTURA_DOSSIER` | Clé cabinet : numéro du dossier client lu par défaut | aucun |
 
 ## Cabinet comptable : une clé pour tous vos dossiers
@@ -114,6 +114,8 @@ dossiers des clients qui vous ont donné accès, un dossier à la fois :
 | `export_fec` | Fichier des écritures comptables de l'année | comptabilité |
 | `encaissements` | Factures encaissées d'une période (date, montant, moyen) | payments:read |
 | `creer_devis_brouillon` | Crée un devis (brouillon) | devis:write |
+| `modeles_devis` | Modèles de devis du compte et leurs variables | devis:write |
+| `devis_depuis_modele` | Crée un devis (brouillon) depuis un modèle | devis:write |
 | `marquer_facture_payee` | Marque une facture payée | payments:write |
 | `ajouter_depense` | Ajoute une dépense | expenses:write |
 
@@ -123,8 +125,19 @@ avec une clé cabinet.
 ## API sous-jacente
 
 Le serveur n'est qu'un habillage de l'API publique VoxFactura (lecture/écriture
-scopée). Doc interactive : `https://voxfacture-production.up.railway.app/api/v1/pub/docs`.
+scopée). Doc interactive : `https://www.voxfactura.com/api/v1/pub/docs`.
 Voir aussi [`llms.txt`](./llms.txt) et [`examples/`](./examples/).
+
+## Éditeur
+
+VoxFactura est édité par ASTERIO 37, SAS immatriculée au RCS de Paris
+(SIREN 107 559 619), 231 rue Saint-Honoré, 75001 Paris. Données hébergées
+dans l'Union européenne. Site : https://www.voxfactura.com. Contact :
+contact@voxfactura.com. Mentions légales :
+https://www.voxfactura.com/legal/mentions-legales.
+
+La facture électronique passe par une plateforme agréée par
+l'administration fiscale : VoxFactura n'est pas elle-même plateforme agréée.
 
 ## Licence
 

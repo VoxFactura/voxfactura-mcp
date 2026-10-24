@@ -8,11 +8,13 @@
 
 ## Base
 
-- Base URL : https://voxfacture-production.up.railway.app
+- Base URL : https://www.voxfactura.com
 - Préfixe : /api/v1/pub
 - Auth : header `Authorization: Bearer vf_live_…` (clé API scopée créée par
   l'artisan dans Réglages → Clés API). Alternative : header `X-API-Key`.
 - Doc OpenAPI : /api/v1/pub/openapi.json ; doc interactive : /api/v1/pub/docs
+- Version du contrat : `info.version` de l'OpenAPI, date du dernier changement
+  du schéma (AAAA.MM.JJ) ; actuelle : 2026.10.22.
 - Toutes les données sont isolées au compte de la clé (aucun accès cross-compte).
 
 ## Clé cabinet (cabinet d'expertise comptable)
@@ -64,8 +66,14 @@
 
 ## Endpoints lecture
 
-- GET /invoices?unpaid_only=&statut=&chantier_id=&from=&to=&modifie_depuis=&limit=&offset=
-  -> { data: [factures], count, total, limit, offset } (`from` / `to` :
+- GET /invoices?unpaid_only=&statut=&inclure_brouillons=&chantier_id=&from=&to=&modifie_depuis=&limit=&offset=
+  -> { data: [factures], count, total, limit, offset }. Factures et avoirs
+  (`type_facture` : standard, acompte, avoir, situation), jamais de devis.
+  Par défaut, seulement les documents émis : ni brouillon ni brouillon
+  abandonné (les annulées et les avoirs restent). `inclure_brouillons=true`
+  ou `statut=brouillon` ajoutent les brouillons, avec numero, reste_du,
+  date_echeance et lien_pdf à null ; `statut` inconnu = 422 ; une clé
+  cabinet ne voit jamais de brouillon (403). (`from` / `to` :
   date d'émission AAAA-MM-JJ, incluses ; `count` = éléments de la page,
   `total` = total correspondant aux filtres ; `modifie_depuis` =
   AAAA-MM-JJTHH:MM:SSZ, seulement ce qui a changé depuis (`updated_at`)).
@@ -128,12 +136,21 @@
   nature? ("bien" ou "service") } ] }. Sans validité : la durée du compte.
   Ligne du catalogue sans prix_unitaire_ht : prix de ce client (réglé par
   l'artisan ou dernier prix facturé), sinon celui du catalogue.
+- GET /devis/templates (devis:write) -> modèles de devis du compte :
+  [ { id (numéro du modèle), nom, objet, variables: [noms] } ]. La liste sert
+  à créer un devis : elle demande la permission d'écriture des devis.
+- POST /devis/from-template (devis:write) -> crée un devis BROUILLON depuis
+  un modèle. Body : { modele (nom ou numéro), variables?: { "nom": "valeur" }
+  (dates AAAA-MM-JJ), client_id? (sinon celui du modèle) }. 422 si une
+  variable manque (liste dans `detail`).
 - POST /invoices/{id}/mark-paid (payments:write) -> Body { montant?, date? }
   (partiel si < reste dû ; vide = solde total ; date = jour du paiement
   AAAA-MM-JJ, pas dans le futur, sinon aujourd'hui).
 - POST /expenses (expenses:write), deux corps possibles :
   * JSON { designation, montant_ttc, montant_ht?, montant_tva?, chantier_id?,
-    fournisseur?, categorie?, source?, ref_externe? } (saisie) ;
+    fournisseur?, categorie?, source?, ref_externe?, metadata? } (saisie) ;
+    `metadata` : données libres de l'outil appelant, clés préfixées `ext_`
+    seulement (toute autre clé : 422) ;
   * multipart/form-data { fichier, source?, ref_externe?, chantier_id?,
     categorie? } : justificatif PDF, PDF Factur-X ou XML CII / UBL (10 Mo au
     plus). Factur-X, UBL, CII : fournisseur, SIREN, numéro, date, HT, TVA par
@@ -191,7 +208,8 @@ de l'horloge locale, puis comparer la signature en temps constant :
                            hashlib.sha256).hexdigest()
         return hmac.compare_digest(attendu, entetes["X-VoxFactura-Signature"])
 
-Trois reprises en cas d'échec ; 20 échecs de suite coupent le webhook.
+Trois reprises en cas d'échec ; 20 livraisons ratées de suite (chacune après
+ses trois reprises) coupent le webhook.
 
 ## Calculs utiles
 

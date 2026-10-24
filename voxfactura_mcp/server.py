@@ -304,6 +304,33 @@ def creer_devis_brouillon(
 
 
 @mcp.tool()
+def modeles_devis(dossier: int | None = None) -> Any:
+    """Modèles de devis de l'artisan (permission devis:write) : numéro, nom,
+    objet et variables à remplir pour `devis_depuis_modele`."""
+    return _safe(lambda: _client(dossier).list_devis_templates())
+
+
+@mcp.tool()
+def devis_depuis_modele(
+    modele: str,
+    variables: dict[str, str] | None = None,
+    client_id: int | None = None,
+    dossier: int | None = None,
+) -> Any:
+    """Crée un devis en BROUILLON depuis un modèle de devis (permission
+    devis:write). `modele` : nom ou numéro du modèle (voir `modeles_devis`).
+    `variables` : valeur de chaque variable sous son nom, dates en
+    AAAA-MM-JJ. `client_id` : numéro du client dans le compte, sinon celui
+    du modèle. Jamais envoyé automatiquement : l'artisan le relit et
+    l'envoie dans VoxFactura."""
+    return _safe(
+        lambda: _client(dossier).create_devis_from_template(
+            modele=modele, variables=variables, client_id=client_id
+        )
+    )
+
+
+@mcp.tool()
 def marquer_facture_payee(
     facture_id: int, montant: str | None = None, dossier: int | None = None
 ) -> Any:

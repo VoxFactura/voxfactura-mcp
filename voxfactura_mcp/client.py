@@ -23,8 +23,11 @@ from urllib.parse import urlsplit
 
 import httpx
 
-DEFAULT_BASE_URL = "https://voxfacture-production.up.railway.app"
+DEFAULT_BASE_URL = "https://www.voxfactura.com"
 _TIMEOUT = 30.0
+# Pagination des dépenses (l'API en rend 200 au plus par page).
+_PAR_PAGE = 200
+_PAGES_MAX = 500
 
 
 class VoxFacturaError(Exception):
@@ -231,6 +234,27 @@ class VoxFacturaClient:
         )
         return page.get("data", [])
 
+    def list_all_expenses(self, *, chantier_id: int | None = None) -> list[dict]:
+        """Toutes les dépenses (filtre optionnel par chantier), page par page
+        jusqu'au `total` du serveur. Avant 0.3.1, `marge_chantier` s'arrêtait
+        aux 200 premières."""
+        tout: list[dict] = []
+        offset = 0
+        for _ in range(_PAGES_MAX):
+            page = self._get(
+                "/expenses",
+                {"chantier_id": chantier_id, "limit": _PAR_PAGE, "offset": offset},
+            )
+            lignes = page.get("data") or []
+            tout.extend(lignes)
+            offset += len(lignes)
+            total = page.get("total")
+            if not lignes or (total is not None and offset >= int(total)):
+                break
+            if total is None and len(lignes) < _PAR_PAGE:
+                break
+        return tout
+
     def invoice_pdf(self, invoice_id: int) -> tuple[bytes, str, str | None]:
         """PDF Factur-X d'une facture émise."""
         return self._get_bytes(f"/invoices/{invoice_id}/pdf")
@@ -333,6 +357,25 @@ class VoxFacturaClient:
         }
         return self._post("/devis", corps)
 
+    def list_devis_templates(self) -> list[dict]:
+        """Modèles de devis du compte : numéro, nom, objet et variables à
+        remplir (scope devis:write : la liste sert à créer un devis)."""
+        return self._get("/devis/templates")
+
+    def create_devis_from_template(
+        self,
+        *,
+        modele: str,
+        variables: dict[str, str] | None = None,
+        client_id: int | None = None,
+    ) -> dict:
+        """Crée un devis BROUILLON depuis un modèle (nom ou numéro), variables
+        remplies (devis:write). Jamais envoyé automatiquement."""
+        return self._post(
+            "/devis/from-template",
+            {"modele": modele, "variables": variables or {}, "client_id": client_id},
+        )
+
     def mark_invoice_paid(self, invoice_id: int, *, montant: str | None = None) -> dict:
         """Marque une facture payée (payments:write). montant None -> solde total."""
         return self._post(f"/invoices/{invoice_id}/mark-paid", {"montant": montant})
@@ -374,7 +417,7 @@ class VoxFacturaClient:
         serveur, voir `chantier_revenue`) - dépenses. Deux lectures
         (`invoices:read` + `expenses:read` requis sur la clé)."""
         ca = self.chantier_revenue(chantier_id)
-        expenses = self.list_expenses(chantier_id=chantier_id, limit=200)
+        expenses = self.list_all_expenses(chantier_id=chantier_id)
         ca_ht = _dec(ca.get("ca_ht"))
         ca_ttc = _dec(ca.get("ca_ttc"))
         dep_ht = sum((_dec(e.get("montant_ht")) for e in expenses), Decimal("0"))

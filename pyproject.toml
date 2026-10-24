@@ -1,11 +1,11 @@
 [project]
 name = "voxfactura-mcp"
-version = "0.3.0"
+version = "0.3.2"
 description = "Serveur MCP VoxFactura : branche ton business (factures, dépenses, clients, marge par client, TVA) sur ton assistant IA."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "VoxFactura" }]
+authors = [{ name = "ASTERIO 37 (VoxFactura)", email = "contact@voxfactura.com" }]
 keywords = ["mcp", "voxfactura", "facturation", "artisan", "claude"]
 dependencies = [
     "mcp>=2.0",
@@ -21,8 +21,10 @@ dependencies = [
 voxfactura-mcp = "voxfactura_mcp.server:main"
 
 [project.urls]
-Homepage = "https://voxfactura.com"
-Documentation = "https://voxfacture-production.up.railway.app/api/v1/pub/docs"
+Homepage = "https://www.voxfactura.com"
+Documentation = "https://www.voxfactura.com/api/v1/pub/docs"
+Source = "https://github.com/VoxFactura/voxfactura-mcp"
+Issues = "https://github.com/VoxFactura/voxfactura-mcp/issues"
 
 [build-system]
 requires = ["hatchling"]

@@ -3,7 +3,7 @@
 Remplace `vf_live_…` par ta clé (Réglages → Clés API).
 
 ```bash
-BASE="https://voxfacture-production.up.railway.app/api/v1/pub"
+BASE="https://www.voxfactura.com/api/v1/pub"
 KEY="vf_live_ta_cle"
 AUTH="Authorization: Bearer $KEY"
 ```
@@ -57,6 +57,12 @@ curl -s -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"client_id":3,"objet":"Toiture","lignes":[
         {"designation":"Radiateur","quantite":3,"prix_unitaire_ht":450,"taux_tva":10}]}' \
   "$BASE/devis"
+
+# Modèles de devis, puis un devis brouillon depuis l'un d'eux
+curl -s -H "$AUTH" "$BASE/devis/templates"
+curl -s -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"modele":"Entretien chaudière","variables":{"date":"2026-11-03"},"client_id":3}' \
+  "$BASE/devis/from-template"
 
 # Marquer une facture payée (partiel possible via montant)
 curl -s -H "$AUTH" -H "Content-Type: application/json" \
